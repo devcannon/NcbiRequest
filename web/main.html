@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern GUI Application</title>
+
+    <!-- Add Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="p-4 relative">
+    <div class="flex flex-row gap-x-4 w-full">
+        <div class="flex flex-col w-1/3">
+            <label for="genes" class="block mb-2">Genes</label>
+            <textarea id="genes" class="border border-gray-300 rounded p-2 mb-4 w-full" rows="3" placeholder="Atg7&#10;Lep"></textarea>
+        </div>
+
+        <div class="flex flex-col w-2/3">
+            <label for="queries" class="block mb-2">Queries</label>
+            <textarea id="queries" class="border border-gray-300 rounded p-2 mb-4 w-full" rows="3" placeholder="(<gene>) AND (fasting)&#10;(<gene>) AND (adipose tissue)"></textarea>
+        </div>
+
+    </div>
+    <button onclick="run()" class="bg-blue-500 text-white px-4 py-2 rounded block w-full">Run</button>
+    <progress id="progressBar" max="100" value="0" class="w-full hidden my-6"></progress>
+
+    <div class="max-w-screen-md mx-auto">
+        <table class="min-w-full bg-white border border-gray-300">
+            <tbody id="tableBody">
+                <!-- Table body will be populated dynamically using JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Eel.js script -->
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+
+</body>
+
+</html>
