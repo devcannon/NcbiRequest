@@ -12,6 +12,8 @@ async function run() {
     progressBar.classList.remove("hidden");
     
     json = await eel.run_button_click(genes, queries)();
+    const clipBoardButton = document.getElementById("clipBoardButton");
+    clipBoardButton.classList.remove("hidden")
     updateTable(json)
 }
 
@@ -39,5 +41,14 @@ function updateTable(json) {
     });
 
     tableBody.appendChild(table);
+}
 
+function copyTableToClipboard() {
+    // const html = document.getElementById('table').innerHTML;
+    // let html = '<table><tr><td><a href="https://www.my-url.com">My link</a></td><td>secondCell</td></tr><tr><td>firstCellSecondRow</td><td>secondCellSecondRow</td></tr></table>';
+
+    let html = document.getElementById('table').outerHTML;
+
+    const blob = new Blob([html], { type: "text/html" });
+    navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 }
