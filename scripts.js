@@ -7,8 +7,8 @@ function updateProgressBar(value) {
 }
 
 async function run() {
-    let genes = document.getElementById('genes').value.split('\n');
-    let queries = document.getElementById('queries').value.split('\n');
+    let genes = document.getElementById('genes').value.split('\n').filter(e => e != '');
+    let queries = document.getElementById('queries').value.split('\n').filter(e => e != '');
     
     resetTable();
     const progressBar = document.getElementById("progressBar");
