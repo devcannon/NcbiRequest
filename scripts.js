@@ -1,6 +1,36 @@
 const URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 const MAX_RETRIES = 5
-// const NCBI_API_KEY = XX
+
+window.addEventListener('load', event => {
+    checkAPIKey() ? document.getElementById('api-key-stored').classList.remove("hidden") : document.getElementById('no-api-key-stored').classList.remove("hidden") 
+});
+
+function checkAPIKey() {
+    return localStorage.getItem('ncbiApiKey') ? true : false;
+}
+
+document.getElementById('api-key-manager').addEventListener('manage', event => {
+    if (event.detail) {
+        document.getElementById('no-api-key-stored').classList.add("hidden");
+        document.getElementById('api-key-stored').classList.remove("hidden");
+    } else {
+        document.getElementById('no-api-key-stored').classList.remove("hidden");
+        document.getElementById('api-key-stored').classList.add("hidden");
+    }
+})
+
+function setAPIKey() {
+    const apiKey = prompt("Please enter API key");
+    localStorage.setItem('ncbiApiKey', apiKey);
+    const apiKeySetEvent = new CustomEvent("manage", {detail: true});
+    document.getElementById('api-key-manager').dispatchEvent(apiKeySetEvent);
+}
+
+function deleteAPIKey() {
+    localStorage.removeItem('ncbiApiKey');
+    const apiKeySetEvent = new CustomEvent("manage", {detail: false});
+    document.getElementById('api-key-manager').dispatchEvent(apiKeySetEvent);
+}
 
 function updateProgressBar(value) {
     document.getElementById('progressBar').value = value;
@@ -26,7 +56,8 @@ async function run() {
         geneResults.push(gene);
         for (let query of queries) {
             query = query.replace("<gene>", gene);
-            const paramsUrl = URL + `?term=${query}&db=pubmed` //&api_key=${NCBI_API_KEY}`
+            let paramsUrl = URL + `?term=${query}&db=pubmed`
+            paramsUrl += localStorage.getItem('ncbiApiKey') ? `&api_key=${localStorage.getItem('ncbiApiKey')}` : '';
             const jsonResponse = await requestData(paramsUrl);
             const count = extractCount(jsonResponse);
             geneResults.push(count);
