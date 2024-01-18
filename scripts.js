@@ -19,6 +19,11 @@ document.getElementById('api-key-manager').addEventListener('manage', event => {
     }
 })
 
+function resetAll() {
+    resetTable();
+    resetProgressBar();
+}
+
 function setAPIKey() {
     const apiKey = prompt("Please enter API key");
     localStorage.setItem('ncbiApiKey', apiKey);
@@ -37,10 +42,10 @@ function updateProgressBar(value) {
 }
 
 async function run() {
+    resetAll();
     let genes = document.getElementById('genes').value.split('\n').filter(e => e != '');
     let queries = document.getElementById('queries').value.split('\n').filter(e => e != '');
     
-    resetTable();
     const progressBar = document.getElementById("progressBar");
     progressBar.classList.remove("hidden");
     
@@ -92,6 +97,10 @@ function extractCount(responseBody) {
 function resetTable() {
     const tableRows = document.querySelectorAll("tr");
     tableRows.forEach(ele => ele.remove());
+}
+
+function resetProgressBar() {
+    document.getElementById('progressBar').value = 0;
 }
 
 function updateTable(resultsArr) {
