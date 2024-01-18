@@ -16,6 +16,7 @@ notificationManager.addEventListener('notify', event => {
 
 function hideNotification() {
     notificationManager.classList.add('-top-24');
+    notificationManager.firstChild.textContent = ''
 };
 
 document.getElementById('api-key-manager').addEventListener('manage', event => {
