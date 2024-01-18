@@ -1,5 +1,5 @@
 const URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
-const MAX_RETRIES = 5
+const notificationManager = document.getElementById('notifications');
 
 window.addEventListener('load', event => {
     checkAPIKey() ? document.getElementById('api-key-stored').classList.remove("hidden") : document.getElementById('no-api-key-stored').classList.remove("hidden") 
@@ -7,7 +7,16 @@ window.addEventListener('load', event => {
 
 function checkAPIKey() {
     return localStorage.getItem('ncbiApiKey') ? true : false;
-}
+};
+
+notificationManager.addEventListener('notify', event => {
+    event.target.classList.remove('-top-24');
+    notificationManager.firstChild.textContent = event.detail.msg;
+});
+
+function hideNotification() {
+    notificationManager.classList.add('-top-24');
+};
 
 document.getElementById('api-key-manager').addEventListener('manage', event => {
     if (event.detail) {
@@ -17,7 +26,7 @@ document.getElementById('api-key-manager').addEventListener('manage', event => {
         document.getElementById('no-api-key-stored').classList.remove("hidden");
         document.getElementById('api-key-stored').classList.add("hidden");
     }
-})
+});
 
 function resetAll() {
     resetTable();
@@ -29,17 +38,17 @@ function setAPIKey() {
     localStorage.setItem('ncbiApiKey', apiKey);
     const apiKeySetEvent = new CustomEvent("manage", {detail: true});
     document.getElementById('api-key-manager').dispatchEvent(apiKeySetEvent);
-}
+};
 
 function deleteAPIKey() {
     localStorage.removeItem('ncbiApiKey');
     const apiKeySetEvent = new CustomEvent("manage", {detail: false});
     document.getElementById('api-key-manager').dispatchEvent(apiKeySetEvent);
-}
+};
 
 function updateProgressBar(value) {
     document.getElementById('progressBar').value = value;
-}
+};
 
 async function run() {
     resetAll();
@@ -62,8 +71,7 @@ async function run() {
         for (let query of queries) {
             query = query.replace("<gene>", gene);
             let paramsUrl = URL + `?term=${query}&db=pubmed`
-            paramsUrl += localStorage.getItem('ncbiApiKey') ? `&api_key=${localStorage.getItem('ncbiApiKey')}` : '';
-            const jsonResponse = await requestData(paramsUrl);
+            const jsonResponse = await requestData(paramsUrl, localStorage.getItem('ncbiApiKey') || false);
             const count = extractCount(jsonResponse);
             geneResults.push(count);
             requestCount++;
@@ -76,16 +84,40 @@ async function run() {
 
     const clipBoardButton = document.getElementById("clipBoardButton");
     clipBoardButton.classList.remove("hidden")
-}
+};
 
 
-async function requestData(UrlWithParams) {
-    const response = await fetch(UrlWithParams, {
-        mode: 'cors'
-    });
-    const body = await response.text();
-    return body
-}
+async function requestData(UrlWithParamsWithoutApiKey, apiKey) {
+    // Add api key to url as parameter
+    let UrlWithParamsAndAPIKey
+    if (apiKey) {
+        UrlWithParamsAndAPIKey = UrlWithParamsWithoutApiKey + `&api_key=${apiKey}`;
+    }
+    try {
+        // Request data with API key
+        const response = await fetch(apiKey ? UrlWithParamsAndAPIKey : UrlWithParamsWithoutApiKey, { mode: 'cors' });
+        const body = await response.text();
+        return body
+    } catch(error) {
+        // Requesting data failed
+        console.error(error);
+        if (apiKey) {
+            try {
+                // If an API key was set, try again without API key parameter
+                const body = await requestData(UrlWithParamsWithoutApiKey);
+                //
+                console.log('Removing incorrect API key ...')
+                deleteAPIKey();
+                console.log("Repeating without API key ...");
+                const notify = new CustomEvent('notify',  {detail: {msg: 'API incorrect and deleted!'}});
+                notificationManager.dispatchEvent(notify);
+                return body
+            } catch(error) {
+                throw error
+            }
+        }
+    }
+};
 
 function extractCount(responseBody) {
     // Response body is xml.
@@ -97,7 +129,7 @@ function extractCount(responseBody) {
 function resetTable() {
     const tableRows = document.querySelectorAll("tr");
     tableRows.forEach(ele => ele.remove());
-}
+};
 
 function resetProgressBar() {
     document.getElementById('progressBar').value = 0;
@@ -116,11 +148,11 @@ function updateTable(resultsArr) {
         });
     tableBody.appendChild(row);
     });
-}
+};
 
 function copyTableToClipboard() {
     let html = document.getElementById('table').outerHTML;
 
     const blob = new Blob([html], { type: "text/html" });
     navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
-}
+};
